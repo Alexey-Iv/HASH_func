@@ -2,10 +2,7 @@
 //
 #include <iostream>
 #include <string>
-#include <cctype>
 #include <fstream>
-#include <windows.h> 
-#include <shellapi.h>
 using namespace std;
 
 
