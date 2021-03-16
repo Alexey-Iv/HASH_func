@@ -154,20 +154,47 @@ void login(struct UserData& ud)
 
 void displayInf(struct UserData& ud) {
     string name;
+    string surname;
     string date;
     string space;
+    string clas;
 
     cout << "Write your name, please: ";
     cin >> name;
 
+    cout << "Write yor surname, please: ";
+    cin >> surname;
+
+    cout << "Write yor class, please: ";
+    cin >> clas;
+
     cout << "Write your date, please: ";
     cin >> date;
     //ShellExecute(NULL, "open", "Classes", NULL, NULL, SW_RESTORE);
-    name = name + ".txt";
-    ifstream f(name.c_str());
-    while (!f.eof()) {
-        getline(f, space);
-        cout << space << endl;
+    name = name + "-" + surname + "-" + clas + ".txt";
+    if (date == "0" || date == " ") {
+        name = ".\\..\\..\\" + name;
+        cout << name << endl;
+        ifstream f(name.c_str(), ios::in);
+        if (f.is_open()) {
+            while (!f.eof()) {
+                getline(f, space);
+                cout << space << endl;
+            }
+            f.close();
+        }
+    }
+    else {
+        name = ".\\Classes\\Schedule\\" + name;
+        cout << name << endl;
+        ifstream f(name.c_str(), ios::in);
+        if (f.is_open()) {
+            while (!f.eof()) {
+                getline(f, space);
+                cout << space << endl;
+            }
+            f.close();
+        }
     }
 
 }
