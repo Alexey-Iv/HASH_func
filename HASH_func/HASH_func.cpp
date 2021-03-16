@@ -1,4 +1,4 @@
-﻿
+
 //
 #include <iostream>
 #include <string>
@@ -150,7 +150,21 @@ void login(struct UserData& ud)
 
 
 }
-
+//finction, that makes one day of schedule
+void mk_day(string personalinf) {
+    /*
+    * personalinf - [0] - name
+    *               [1] - surname
+    *               [2] - class
+    *               [3] - date
+    */
+    //TODO make name file (from massiv)
+    string file = personalinf[0] + "-" + personalinf[1]  +  personalinf[2];
+    fstream f(file.c_str());
+    if (f.is_open()) {
+        //TODO: make func that can schedule for person(all schedule!)
+    }
+}
 
 void displayInf(struct UserData& ud) {
     string name;
@@ -170,8 +184,11 @@ void displayInf(struct UserData& ud) {
 
     cout << "Write your date, please: ";
     cin >> date;
-    //ShellExecute(NULL, "open", "Classes", NULL, NULL, SW_RESTORE);
+
     name = name + "-" + surname + "-" + clas + ".txt";
+
+    //If client wants to see his/her marks
+
     if (date == "0" || date == " ") {
         name = ".\\..\\..\\" + name;
         cout << name << endl;
@@ -184,16 +201,60 @@ void displayInf(struct UserData& ud) {
             f.close();
         }
     }
+    //if client wants to see his/her schedule
+
     else {
         name = ".\\Classes\\Schedule\\" + name;
         cout << name << endl;
         ifstream f(name.c_str(), ios::in);
         if (f.is_open()) {
             while (!f.eof()) {
-                getline(f, space);
-                cout << space << endl;
+                if (date == "Пн" || date == "1") {
+                    getline(f, space);
+                    if (space == "Понедельник") {
+                        while (space != "\n") {
+                            getline(f, space);
+                            cout << space << endl;
+                        }
+                    }
+                }
+                else if (date == "Вт" || date == "2") {
+                    getline(f, space);
+                    if (space == "Вторник") {
+                        while (space != "\n") {
+                            getline(f, space);
+                            cout << space << endl;
+                        }
+                    }
+                } else if (date == "Ср" || date == "3") {
+                    getline(f, space);
+                    if (space == "Среда") {
+                        while (space != "\n") {
+                            getline(f, space);
+                            cout << space << endl;
+                        }
+                    }
+                }
+                else if (date == "Чт" || date == "4") {
+                    getline(f, space);
+                    if (space == "Четверг") {
+                        while (space != "\n") {
+                            getline(f, space);
+                            cout << space << endl;
+                        }
+                    }
+                }
+                else if (date == "Пт" || date == "5") {
+                    getline(f, space);
+                    if (space == "Пятница") {
+                        while (space != "\n") {
+                            getline(f, space);
+                            cout << space << endl;
+                        }
+                    }
+                }
+                f.close();
             }
-            f.close();
         }
     }
 
