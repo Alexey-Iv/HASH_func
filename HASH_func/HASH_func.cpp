@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
-#include <Windows.h>
+#include <windows.h>
 using namespace std;
 
 //-----------------------------------------------------------------
@@ -35,12 +35,12 @@ namespace hashing
 namespace sign_in
 {
     void registration(struct UserData_H& ud_h);
-    void login(struct UserData_H& ud_h);
+    void login(struct UserData_H& ud_h, struct UserData& ud);
 }
 
 namespace information
 {
-    void displayInf(struct UserData_H& ud_h);
+    void displayInf(struct UserData_H& ud_h, struct UserData& ud);
     void display_day(string name, string day);    //func, that can be output information every day of list
     void mk_day(struct UserData& ud);
 }
@@ -66,11 +66,11 @@ int main(int argc, char** argv)
     if (answer == "yes" || answer == "1")
     {
         sign_in::registration(ud_h);
-        sign_in::login(ud_h);
+        sign_in::login(ud_h, ud);
     }
     if (answer == "no" || answer == "0")
     {
-        sign_in::login(ud_h);
+        sign_in::login(ud_h, ud);
     }
     return 0;
 }
@@ -118,7 +118,7 @@ namespace sign_in
 
         ud_h.login = hashing::_hash(login);
         ud_h.password = hashing::_hash(password);
-        
+
         //Запись данных в файл по (по 4 байта)
         f.write((const char*)&hLogin, sizeof(unsigned int));
         f.write((const char*)&hPassword, sizeof(unsigned int));
@@ -126,7 +126,7 @@ namespace sign_in
     }
 
 
-    void login(struct UserData_H& ud_h)
+    void login(struct UserData_H& ud_h, struct UserData& ud)
     {
         ifstream f("Passwords.txt", ios::binary);
 
@@ -172,7 +172,7 @@ namespace sign_in
         }
 
         if (check == true) {
-            information::displayInf(ud_h);
+            information::displayInf(ud_h, ud);
         }
         else {
             cout << "We haven't got these password or login!" << endl;
@@ -189,7 +189,7 @@ namespace sign_in
 namespace information
 {
 
-    void displayInf(UserData_H& ud_h, UserData& ud) 
+    void displayInf(struct UserData_H& ud_h, struct UserData& ud) 
     {
         string space;
         string name;
@@ -220,6 +220,11 @@ namespace information
                     cout << space << endl;
                 }
                 f.close();
+            }
+            else {
+                cout << "We have not got any information for this student. Do you want to registrate your shedule?";
+                //TODO ввыбор кнопок
+                information::mk_day(ud);
             }
         }
         //if client wants to see his/her schedule
@@ -265,7 +270,11 @@ namespace information
         }
 
     }
+    //-----------------------------------------------------------------
 
+
+
+    //-----------------------------------------------------------------
     void display_day(string name, string day)
     {
         string space;
@@ -291,26 +300,35 @@ namespace information
             }
         }
     }
+    //-----------------------------------------------------------------
+
+
+
+    //-----------------------------------------------------------------
     void mk_day(UserData& ud)
     {
         string s = "a";
-        
-        string file = "aa";
-        //file = ".\\Classes\\Schedule\\" + ud.name + "-" + ud.surname + "-" + ud.classes + ".txt";
+        string ss = "b";
+        string file = ".\\Classes\\Schedule\\" + ud.name + "-" + ud.surname + "-" + ud.classes + ".txt";
         ofstream f(file.c_str());
         if (f.is_open())
         {
-            cout << "Write date ";
-            cin >> s;
             cout << "Write your lessons. One lesson - one string\n";
+            cout << "####" << endl;
             cout << "For example: Russian language (406 cab, Igor Igorevich)\n";
             cout << "If you want to stop writing? write 0(Enter)\n";
             cin >> s;
             while (s != "0")
             {
                 //writing;
-                f << s;
+                if (s == "\n"){
+                    f << ss + "\n";
+                }       
                 cin >> s;
+                ss += s;
+                if (s == "\n") {
+                    cout << 1;
+                }
             }
         }
         f.close();
