@@ -1,4 +1,5 @@
 
+//
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -156,7 +157,6 @@ namespace sign_in
             cout << "Write your password: ";
             cin >> password;
             ud_h.password = hashing::_hash(password);
-            cout << 1;
             while (!f.eof()) {
                 f.read((char*)&prime_1, sizeof(unsigned int));
                 f.read((char*)&prime_2, sizeof(unsigned int));
@@ -189,7 +189,7 @@ namespace sign_in
 namespace information
 {
 
-    void displayInf(struct UserData_H& ud_h,struct  UserData& ud) 
+    void displayInf(UserData_H& ud_h, UserData& ud) 
     {
         string space;
         string name;
@@ -260,7 +260,7 @@ namespace information
             else {
                 cout << "We have not got any information for this student. Do you want to registrate your shedule?";
                 //TODO ввыбор кнопок
-                mk_day(ud);
+                information::mk_day(ud);
             }
         }
 
@@ -291,10 +291,12 @@ namespace information
             }
         }
     }
-    void mk_day(struct UserData& ud)
+    void mk_day(UserData& ud)
     {
-        string s = " ";
-        string file = ".\\Classes\\Schedule\\" + ud.name + "-" + ud.surname + "-" + ud.classes + "-" + ".txt";
+        string s = "a";
+        
+        string file = "aa";
+        //file = ".\\Classes\\Schedule\\" + ud.name + "-" + ud.surname + "-" + ud.classes + ".txt";
         ofstream f(file.c_str());
         if (f.is_open())
         {
@@ -310,9 +312,6 @@ namespace information
                 f << s;
                 cin >> s;
             }
-        }
-        else {
-            cout << "Y";
         }
         f.close();
     }
