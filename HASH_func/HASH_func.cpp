@@ -1,20 +1,29 @@
 
-//
 #include <iostream>
 #include <string>
 #include <fstream>
-#include <windows.h>
+#include <Windows.h>
 using namespace std;
 
 //-----------------------------------------------------------------
-struct UserData
+struct UserData_H
+ // datas for hashing information(when we want to check passwords)
 {
     int email;
     int login;
     int password;
 };
-//-----------------------------------------------------------------
 
+
+struct UserData
+ //datas for making new shedule
+{
+    string name;
+    string surname;
+    string classes;
+    string date;
+};
+//-----------------------------------------------------------------
 
 //-----------------------------------------------------------------
 namespace hashing
@@ -24,13 +33,15 @@ namespace hashing
 
 namespace sign_in
 {
-    void registration(struct UserData& ud);
-    void login(struct UserData& ud);
+    void registration(struct UserData_H& ud_h);
+    void login(struct UserData_H& ud_h);
 }
 
 namespace information
 {
-    void displayInf(struct UserData& ud);
+    void displayInf(struct UserData_H& ud_h);
+    void display_day(string name, string day);    //func, that can be output information every day of list
+    void mk_day(struct UserData& ud);
 }
 //-----------------------------------------------------------------
 
@@ -40,22 +51,25 @@ namespace information
 int main(int argc, char** argv)
 {
     string answer = "aa";
-    setlocale(LC_ALL, "Russian");
+    setlocale(LC_CTYPE, "rus");
+    //SetConsoleCP(1251);         // установка кодовой страницы win-cp 1251 в поток ввода
+    //SetConsoleOutputCP(1251);       // установка кодовой страницы win-cp 1251 в поток вывода
 
+    UserData_H ud_h;
     UserData ud;
 
-    cout << "Do you want to registrate?\n";
+    cout << "Do you want to registrate? ";
     cin >> answer;
 
 
     if (answer == "yes" || answer == "1")
     {
-        sign_in::registration(ud);
-        sign_in::login(ud);
+        sign_in::registration(ud_h);
+        sign_in::login(ud_h);
     }
     if (answer == "no" || answer == "0")
     {
-        sign_in::login(ud);
+        sign_in::login(ud_h);
     }
     return 0;
 }
@@ -82,7 +96,7 @@ namespace hashing
 //-----------------------------------------------------------------
 namespace sign_in
 {
-    void registration(struct UserData& ud)
+    void registration(struct UserData_H& ud_h)
     {
         string email;
         string password;
@@ -101,8 +115,8 @@ namespace sign_in
         unsigned int hLogin = hashing::_hash(login);
         unsigned int hPassword = hashing::_hash(password);
 
-        ud.login = hashing::_hash(login);
-        ud.password = hashing::_hash(password);
+        ud_h.login = hashing::_hash(login);
+        ud_h.password = hashing::_hash(password);
         
         //Запись данных в файл по (по 4 байта)
         f.write((const char*)&hLogin, sizeof(unsigned int));
@@ -111,7 +125,7 @@ namespace sign_in
     }
 
 
-    void login(struct UserData& ud)
+    void login(struct UserData_H& ud_h)
     {
         ifstream f("Passwords.txt", ios::binary);
 
@@ -124,7 +138,7 @@ namespace sign_in
         while (!f.eof()) {
             f.read((char*)&prime_1, sizeof(unsigned int));
             f.read((char*)&prime_2, sizeof(unsigned int));
-            if (prime_1 == ud.login && prime_2 == ud.password) {
+            if (prime_1 == ud_h.login && prime_2 == ud_h.password) {
                 cout << "You can continue!" << endl;
                 check = true;
                 break;
@@ -137,17 +151,17 @@ namespace sign_in
             ifstream f("Passwords.txt", ios::binary);
             cout << "Write your login: ";
             cin >> login;
-            ud.login = hashing::_hash(login);
+            ud_h.login = hashing::_hash(login);
 
             cout << "Write your password: ";
             cin >> password;
-            ud.password = hashing::_hash(password);
+            ud_h.password = hashing::_hash(password);
             cout << 1;
             while (!f.eof()) {
                 f.read((char*)&prime_1, sizeof(unsigned int));
                 f.read((char*)&prime_2, sizeof(unsigned int));
-                cout << prime_1 << ud.login << endl;
-                if (prime_1 == ud.login && prime_2 == ud.password) {
+                cout << prime_1 << ud_h.login << endl;
+                if (prime_1 == ud_h.login && prime_2 == ud_h.password) {
                     cout << "You can continue!" << endl;
                     check = true;
                     break;
@@ -158,7 +172,7 @@ namespace sign_in
         }
 
         if (check == true) {
-            information::displayInf(ud);
+            information::displayInf(ud_h);
         }
         else {
             cout << "We haven't got these password or login!" << endl;
@@ -174,31 +188,30 @@ namespace sign_in
 //-----------------------------------------------------------------
 namespace information
 {
-    void displayInf(struct UserData& ud) {
-        string name;
-        string surname;
-        string date;
+
+    void displayInf(struct UserData_H& ud_h,struct  UserData& ud) 
+    {
         string space;
-        string clas;
+        string name;
 
         cout << "Write your name, please: ";
-        cin >> name;
+        cin >> ud.name;
 
         cout << "Write yor surname, please: ";
-        cin >> surname;
+        cin >> ud.surname;
 
         cout << "Write yor class, please: ";
-        cin >> clas;
+        cin >> ud.classes;
 
         cout << "Write your date, please: ";
-        cin >> date;
+        cin >> ud.date;
 
-        name = name + "-" + surname + "-" + clas + ".txt";
+        name = ud.name + "-" + ud.surname + "-" + ud.classes + ".txt";
 
         //If client wants to see his/her marks
 
-        if (date == "0" || date == " ") {
-            name = ".\\..\\..\\" + name;
+        if (ud.date == "0" || ud.date == " ") {
+            name = ".\\Classes\\Marks\\" + name;
             cout << name << endl;
             ifstream f(name.c_str(), ios::in);
             if (f.is_open()) {
@@ -217,50 +230,29 @@ namespace information
             ifstream f(name.c_str(), ios::in);
             if (f.is_open()) {
                 while (!f.eof()) {
-                    if (date == "Пн" || date == "1") {
-                        getline(f, space);
-                        if (space == "Понедельник") {
-                            while (space != "\n") {
-                                getline(f, space);
-                                cout << space << endl;
-                            }
-                        }
+                    if (ud.date == "Пн" || ud.date == "1")
+                    {
+                        information::display_day(name, "Monday");
+                        break;
                     }
-                    else if (date == "Вт" || date == "2") {
-                        getline(f, space);
-                        if (space == "Вторник") {
-                            while (space != "\n") {
-                                getline(f, space);
-                                cout << space << endl;
-                            }
-                        }
+                    else if (ud.date == "Вт" || ud.date == "2")
+                    {
+                        information::display_day(name, "Tuesday");
+                        break;
                     }
-                    else if (date == "Ср" || date == "3") {
-                        getline(f, space);
-                        if (space == "Среда") {
-                            while (space != "\n") {
-                                getline(f, space);
-                                cout << space << endl;
-                            }
-                        }
+                    else if (ud.date == "Ср" || ud.date == "3")
+                    {
+                        information::display_day(name, "Wendsday");
+                        break;
                     }
-                    else if (date == "Чт" || date == "4") {
-                        getline(f, space);
-                        if (space == "Четверг") {
-                            while (space != "\n") {
-                                getline(f, space);
-                                cout << space << endl;
-                            }
-                        }
+                    else if (ud.date == "Чт" || ud.date == "4")
+                    {
+                        information::display_day(name, "Thursday");
+                        break;
                     }
-                    else if (date == "Пт" || date == "5") {
-                        getline(f, space);
-                        if (space == "Пятница") {
-                            while (space != "\n") {
-                                getline(f, space);
-                                cout << space << endl;
-                            }
-                        }
+                    else if (ud.date == "Пт" || ud.date == "5") {
+                        information::display_day(name, "Friday");
+                        break;
                     }
                     f.close();
                 }
@@ -268,25 +260,61 @@ namespace information
             else {
                 cout << "We have not got any information for this student. Do you want to registrate your shedule?";
                 //TODO ввыбор кнопок
+                mk_day(ud);
             }
         }
 
     }
 
-    //finction, that makes one day of schedule
-    void mk_day(string personalinf) {
-        /*
-        * personalinf - [0] - name
-        *               [1] - surname
-        *               [2] - class
-        *               [3] - date
-        */
-        //TODO make name file (from massiv)
-        string file = personalinf[0] + "-" + personalinf[1] + personalinf[2];
-        fstream f(file.c_str());
+    void display_day(string name, string day)
+    {
+        string space;
+        bool reading = true;
+
+        ifstream f(name.c_str(), ios::in);
         if (f.is_open()) {
-            //TODO: make func that can schedule for person(all schedule!)
+            while (!f.eof()) {
+                getline(f, space);
+                if (space == day) {
+                    while (space != "+") {
+                        getline(f, space);
+                        if (space == "+") {
+                            reading = false;
+                            break;
+                        }
+                        cout << space << endl;
+                    }
+                }
+                if (reading == false) {
+                    break;
+                }
+            }
         }
+    }
+    void mk_day(struct UserData& ud)
+    {
+        string s = " ";
+        string file = ".\\Classes\\Schedule\\" + ud.name + "-" + ud.surname + "-" + ud.classes + "-" + ".txt";
+        ofstream f(file.c_str());
+        if (f.is_open())
+        {
+            cout << "Write date ";
+            cin >> s;
+            cout << "Write your lessons. One lesson - one string\n";
+            cout << "For example: Russian language (406 cab, Igor Igorevich)\n";
+            cout << "If you want to stop writing? write 0(Enter)\n";
+            cin >> s;
+            while (s != "0")
+            {
+                //writing;
+                f << s;
+                cin >> s;
+            }
+        }
+        else {
+            cout << "Y";
+        }
+        f.close();
     }
 }
 //-----------------------------------------------------------------
