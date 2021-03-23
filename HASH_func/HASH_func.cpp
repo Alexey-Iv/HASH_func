@@ -1,5 +1,4 @@
 
-//
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -34,8 +33,9 @@ namespace hashing
 
 namespace sign_in
 {
-    void registration(struct UserData_H& ud_h);
+    void registration(struct UserData_H& ud_h, struct UserData& ud);
     void login(struct UserData_H& ud_h, struct UserData& ud);
+    bool proverka_login(unsigned int login);
 }
 
 namespace information
@@ -53,6 +53,11 @@ int main(int argc, char** argv)
 {
     string answer = "aa";
     setlocale(LC_CTYPE, "rus");
+
+    /*Получение дескриптора*/
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    SetConsoleTextAttribute(hConsole, (WORD)((0 << 4) | 2));
     //SetConsoleCP(1251);         // установка кодовой страницы win-cp 1251 в поток ввода
     //SetConsoleOutputCP(1251);       // установка кодовой страницы win-cp 1251 в поток вывода
 
@@ -61,11 +66,10 @@ int main(int argc, char** argv)
 
     cout << "Do you want to registrate? ";
     cin >> answer;
-
-
+    cout << answer;
     if (answer == "yes" || answer == "1")
     {
-        sign_in::registration(ud_h);
+        sign_in::registration(ud_h, ud);
         sign_in::login(ud_h, ud);
     }
     if (answer == "no" || answer == "0")
@@ -97,32 +101,64 @@ namespace hashing
 //-----------------------------------------------------------------
 namespace sign_in
 {
-    void registration(struct UserData_H& ud_h)
+
+
+    //-----------------------------------------------------------------
+    void registration(struct UserData_H& ud_h, struct UserData& ud)
     {
         string email;
         string password;
         string login;
         ofstream f("Passwords.txt", ios::app | ios::binary);
+        ofstream p("Info.txt", ios::app);
 
         cout << "Write your e-mail: ";
         cin >> email;
 
         cout << "Write your new login: ";
         cin >> login;
+        bool flag = proverka_login(hashing::_hash(login));
 
-        cout << "Write your new password: ";
-        cin >> password;
+        while (!flag) {
+            cout << "This login has written there. Please writer another one." << endl;
+            cin >> login;
+            flag = proverka_login(hashing::_hash(login));
+        }
+        if (flag) {
 
-        unsigned int hLogin = hashing::_hash(login);
-        unsigned int hPassword = hashing::_hash(password);
+            cout << "Write your new password: ";
+            cin >> password;
 
-        ud_h.login = hashing::_hash(login);
-        ud_h.password = hashing::_hash(password);
+            if (password.length() < 7)
+            {
+                cout << "So small count of simvolvs in your password... Try change it" << endl;
+                while (password.length() < 7) {
+                    cin >> password;
+                }
+            }
 
-        //Запись данных в файл по (по 4 байта)
-        f.write((const char*)&hLogin, sizeof(unsigned int));
-        f.write((const char*)&hPassword, sizeof(unsigned int));
-        f.close();
+            cout << "Write your name ";
+            cin >> ud.name;
+
+            cout << "Write your surname ";
+            cin >> ud.surname;
+
+            cout << "Write your class ";
+            cin >> ud.classes;
+
+            unsigned int hLogin = hashing::_hash(login);
+            unsigned int hPassword = hashing::_hash(password);
+
+            ud_h.login = hashing::_hash(login);
+            ud_h.password = hashing::_hash(password);
+
+            //Запись данных в файл по (по 4 байта)
+            f.write((const char*)&hLogin, sizeof(unsigned int));
+            f.write((const char*)&hPassword, sizeof(unsigned int));
+            f.close();
+            p << hLogin << " " << ud.name << " " << ud.surname << " " << ud.classes;
+            p.close();
+        }
     }
 
 
@@ -160,7 +196,7 @@ namespace sign_in
             while (!f.eof()) {
                 f.read((char*)&prime_1, sizeof(unsigned int));
                 f.read((char*)&prime_2, sizeof(unsigned int));
-                cout << prime_1 << ud_h.login << endl;
+
                 if (prime_1 == ud_h.login && prime_2 == ud_h.password) {
                     cout << "You can continue!" << endl;
                     check = true;
@@ -181,6 +217,33 @@ namespace sign_in
 
 
     }
+    //-----------------------------------------------------------------
+
+
+
+    //-----------------------------------------------------------------
+    bool proverka_login(unsigned int login)
+    {
+        unsigned int prime_1;
+        unsigned int prime_2;
+
+        ifstream f("Passwords.txt", ios::binary);
+        while (!f.eof()) {
+            f.read((char*)&prime_1, sizeof(unsigned int));
+            f.read((char*)&prime_2, sizeof(unsigned int));
+
+            if (prime_1 == login)
+            {
+                break;
+                f.close();
+                return true;
+                
+            }
+            
+        }
+        return false;
+
+    }
 }
 //-----------------------------------------------------------------
 
@@ -193,18 +256,6 @@ namespace information
     {
         string space;
         string name;
-
-        cout << "Write your name, please: ";
-        cin >> ud.name;
-
-        cout << "Write yor surname, please: ";
-        cin >> ud.surname;
-
-        cout << "Write yor class, please: ";
-        cin >> ud.classes;
-
-        cout << "Write your date, please: ";
-        cin >> ud.date;
 
         name = ud.name + "-" + ud.surname + "-" + ud.classes + ".txt";
 
@@ -313,9 +364,9 @@ namespace information
         ofstream f(file.c_str());
         if (f.is_open())
         {
-            cout << "Write your lessons. One lesson - one string\n";
-            cout << "####" << endl;
-            cout << "For example: Russian language (406 cab, Igor Igorevich)\n";
+            cout << "\tWrite your lessons. One lesson - one string\n";
+            cout << "---------------------------------------------" << endl;
+            cout << "For example: Russian language (406 cab, Igor Igorevich).";
             cout << "If you want to stop writing? write 0(Enter)\n";
             cin >> s;
             while (s != "0")
