@@ -355,6 +355,7 @@ namespace information
 
 
 
+
     //-----------------------------------------------------------------
     void mk_day(UserData& ud)
     {
