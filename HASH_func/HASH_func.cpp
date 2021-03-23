@@ -231,17 +231,19 @@ namespace sign_in
         while (!f.eof()) {
             f.read((char*)&prime_1, sizeof(unsigned int));
             f.read((char*)&prime_2, sizeof(unsigned int));
-
+            cout << prime_1 << endl;
+            cout << login << endl;
             if (prime_1 == login)
             {
                 break;
                 f.close();
-                return true;
+                return false;
                 
             }
             
         }
-        return false;
+        f.close();
+        return true;
 
     }
 }
